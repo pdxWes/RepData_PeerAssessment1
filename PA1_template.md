@@ -1,16 +1,12 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
 As with any R coding project, load the data.
 Put file in same directory as .Rmd file so that setting the working directory
 is unnecessary.
-```{r Part1, echo = TRUE}
+
+```r
 dta <- read.csv("activity.csv")
 ```
 
@@ -21,12 +17,29 @@ assignment, we can simply ignore NA values.
 We first plot a histogram to explore the data briefly, then we calculate the 
 the mean and median of the the daily total steps.  
 We see that the mean and median are very similar in value.
-```{r Part2, echo = TRUE}
+
+```r
 library(lattice)
 daily_sum <- with(dta, tapply(steps, date, sum))
 histogram(daily_sum, type = "percent", breaks = seq(0, 22000, by = 1000))
+```
+
+![](PA1_template_files/figure-html/Part2-1.png) 
+
+```r
 mean(daily_sum, na.rm = TRUE)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(daily_sum, na.rm = TRUE)
+```
+
+```
+## [1] 10765
 ```
 
 ## What is the average daily activity pattern?
@@ -37,12 +50,22 @@ activity followed by a spike in the morning, then fairly steady activity
 throughout the rest of the day. For this person, the maximum steps occurs in the
 middle of the 8 o'clock hour, which is found by creating a matrix and subsetting 
 it.
-```{r Part3, echo = TRUE}
+
+```r
 interval_mean <- tapply(dta$steps, dta$interval, mean, na.rm=TRUE)
 intervals <- unique(dta$interval) # create vector of intervals
 xyplot(interval_mean~intervals, type = "l")
+```
+
+![](PA1_template_files/figure-html/Part3-1.png) 
+
+```r
 df <- cbind(intervals, interval_mean)
 subset(df, df[,2] == max(df[,2]))[,1]
+```
+
+```
+## [1] 835
 ```
 
 
@@ -54,9 +77,16 @@ from each interval. We then make another histogram and mean/median calculations
 then compare these to the previous one. This is imperfect as it seems that only
 whole days are missing, and all it effectively does is increase the number of
 days with total steps equal to the mean. The histogram peak gets taller.
-```{r Part4, echo = TRUE}
-sum(is.na(dta$steps))
 
+```r
+sum(is.na(dta$steps))
+```
+
+```
+## [1] 2304
+```
+
+```r
 my_impute <- function(my_data) {
       impute_data <- my_data[!is.na(my_data$steps),]
       interval <- unique(impute_data$interval)
@@ -73,8 +103,24 @@ my_impute <- function(my_data) {
 imputed_data <- my_impute(dta)
 daily_sum_impute <- with(imputed_data, tapply(steps, date, sum))
 histogram(daily_sum_impute, type = "percent", breaks = seq(0, 22000, by = 1000))
+```
+
+![](PA1_template_files/figure-html/Part4-1.png) 
+
+```r
 mean(daily_sum_impute, na.rm = TRUE)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(daily_sum_impute, na.rm = TRUE)
+```
+
+```
+## [1] 10766.19
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -87,7 +133,8 @@ lattice's xyplot function to make the side by side graph of the two. The data
 does seem to suggest difference in step patterns during the week and weekend for 
 this subject. Steps are takend more evenly throughout the day during the 
 weekend.
-```{r Part5, echo = TRUE}
+
+```r
 get_weekpart <- function(imputed_data){
       library(tidyr)
       dayofweek <- weekdays(as.Date(imputed_data$date, "%Y-%m-%d"))
@@ -115,5 +162,7 @@ weekpart_data <- get_weekpart(imputed_data)
 with(weekpart_data, xyplot(Int_mean~Interval|PartOfWeek, type = "l",
                            layout=c(1,2)))
 ```
+
+![](PA1_template_files/figure-html/Part5-1.png) 
 
 
